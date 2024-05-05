@@ -1,9 +1,11 @@
 use clap::Parser;
 
+use crate::schema::solr_parser;
 use std::fs::File;
 use std::io::BufReader;
 use xml::reader::{EventReader, XmlEvent};
 
+mod schema;
 #[derive(Parser, Debug)]
 #[command(name = "schemaless")]
 #[command(bin_name = "schemaless")]
@@ -24,9 +26,12 @@ fn main() -> std::io::Result<()> {
     let mut depth = 0;
     for e in parser {
         match e {
-            Ok(XmlEvent::StartElement { name, .. }) => {
+            Ok(XmlEvent::StartElement {
+                name, attributes, ..
+            }) => {
                 println!("{:spaces$}+{name}", "", spaces = depth * 2);
                 depth += 1;
+                solr_parser(name, attributes);
             }
             Ok(XmlEvent::EndElement { name }) => {
                 depth -= 1;
