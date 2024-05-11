@@ -7,8 +7,8 @@ use xml::reader::{EventReader, XmlEvent};
 
 mod schema;
 #[derive(Parser, Debug)]
-#[command(name = "schemaless")]
-#[command(bin_name = "schemaless")]
+#[command(name = "schemeless")]
+#[command(bin_name = "schemeless")]
 #[command(version = "0.0.1")]
 #[command(author, version, about, long_about = None)]
 #[command(next_line_help = true)]
