@@ -125,6 +125,7 @@
   <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default
          because it's very expensive to index everything twice. -->
   <!-- <copyField source="*" dest="_text_"/> -->
+  <copyField dest="_text_"/>
 
   <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names.

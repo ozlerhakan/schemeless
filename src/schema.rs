@@ -1,7 +1,7 @@
 use xml::attribute::OwnedAttribute;
 use xml::name::OwnedName;
 
-const SCHEME_FIELDS: [&'static str; 9] = [
+const SCHEME_FIELDS: [&'static str; 10] = [
     "field",
     "fieldType",
     "dynamicField",
@@ -11,6 +11,7 @@ const SCHEME_FIELDS: [&'static str; 9] = [
     "filter",
     "schema",
     "charFilter",
+    "copyField",
 ];
 
 const FIELD_PROPERTIES: [&str; 17] = [
@@ -65,6 +66,23 @@ pub fn solr_parser(name: OwnedName, attributes: Vec<OwnedAttribute>) {
                     )
                 }
             }
+        }
+    } else if &local_name == &"copyField" {
+        let dest = &attributes
+            .iter()
+            .find(|n| n.name.local_name == "dest")
+            .expect("copyField must have the dest attribute.")
+            .value;
+        let source = &attributes
+            .iter()
+            .find(|n| n.name.local_name == "source")
+            .expect("copyField must have the source attribute.")
+            .value;
+        if dest == source {
+            panic!(
+                "dest: '{}' and source: '{}' cannot share the same value in copyField.",
+                dest, source
+            )
         }
     }
 }
