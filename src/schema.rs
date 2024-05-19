@@ -34,6 +34,60 @@ const FIELD_PROPERTIES: [&str; 17] = [
     "large",
 ];
 
+const FIELD_TYPE_CLASSES: [&'static str; 27] = [
+    "BBoxField",
+    "BinaryField",
+    "BoolField",
+    "CollationField",
+    "CurrencyFieldType",
+    "DateRangeField",
+    "DenseVectorField",
+    "DatePointField",
+    "DoublePointField",
+    "ExternalFileField",
+    "EnumFieldType",
+    "FloatPointField",
+    "ICUCollationField",
+    "IntPointField",
+    "LatLonPointSpatialField",
+    "LongPointField",
+    "NestPathField",
+    "PointType",
+    "PreAnalyzedField",
+    "RandomSortField",
+    "RankField",
+    "RptWithGeometrySpatialField",
+    "SortableTextField",
+    "SpatialRecursivePrefixTreeFieldType",
+    "StrField",
+    "TextField",
+    "UUIDField",
+];
+
+const DEPRECATED_FIELD_TYPES: [&'static str; 8] = [
+    "CurrencyField",
+    "EnumField",
+    "TrieDateField",
+    "TrieDoubleField",
+    "TrieFloatField",
+    "TrieIntField",
+    "TrieLongField",
+    "TrieField",
+];
+
+const FIELD_TYPE_PROPERTIES: [&'static str; 10] = [
+    "name",
+    "class",
+    "positionIncrementGap",
+    "autoGeneratePhraseQueries",
+    "synonymQueryStyle",
+    "enableGraphQueries",
+    "docValuesFormat",
+    "postingsFormat",
+    "subFieldSuffix",
+    "dimension",
+];
+
 const FIELD_KEYS: [&str; 2] = ["name", "type"];
 
 pub fn solr_parser(name: OwnedName, attributes: Vec<OwnedAttribute>) {
