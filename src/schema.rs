@@ -88,6 +88,8 @@ const FIELD_TYPE_PROPERTIES: [&'static str; 10] = [
     "dimension",
 ];
 
+const field_type_classes: [&'static str; 2] = ["solr.", "org.apache.solr.schema."];
+
 const FIELD_KEYS: [&str; 2] = ["name", "type"];
 
 pub fn solr_parser(name: OwnedName, attributes: Vec<OwnedAttribute>) {
@@ -138,5 +140,17 @@ pub fn solr_parser(name: OwnedName, attributes: Vec<OwnedAttribute>) {
                 dest, source
             )
         }
+    } else if &local_name == &"fieldType" {
+        // "org.apache.solr.schema" or "solr"
+        let class_attribute = attributes
+            .iter()
+            .filter(|e| &e.name.local_name == &"class")
+            .filter(|e| {
+                field_type_classes
+                    .iter()
+                    .any(|prefix| e.value.starts_with(prefix))
+            })
+            .find(|e| FIELD_TYPE_CLASSES.contains(&e.value.as_str()))
+            .expect("");
     }
 }
