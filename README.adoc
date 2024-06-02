@@ -1,0 +1,13 @@
+= Schemeless
+
+Validating Solr schema.xml files seamessly.
+
+== How to get started
+
+To build and run the Schemeless tool, follow these steps:
+
+[bash]
+----
+$ cargo build
+$ cargo run -- examples/managed-schema.xml
+----

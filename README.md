@@ -1,2 +1,0 @@
-# schemeless
-Solr Schema Validator
