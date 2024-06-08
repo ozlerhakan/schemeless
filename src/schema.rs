@@ -187,10 +187,20 @@ pub fn solr_parser(name: OwnedName, attributes: Vec<OwnedAttribute>) {
                     .collect();
                 if class_attribute.is_empty() {
                     panic!(
-                        "Found an undefined class type in the fieldType decleration: {:?}",
+                        "Found an undefined class type in the fieldType declaration: {:?}",
                         &attributes
                     )
                 }
+                attributes
+                    .iter()
+                    .filter(|e| &e.name.local_name == &"class")
+                    .find(|e| !DEPRECATED_FIELD_TYPES.contains(&e.value.as_str()))
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Found deprecated class in the fieldType declaration: {:?}",
+                            &attributes,
+                        )
+                    });
             }
             SolrFields::Unknown(e) => {
                 println!("missing field, {:?}", &e)
