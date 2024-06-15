@@ -115,7 +115,7 @@ impl FromStr for SolrFields {
     }
 }
 
-pub fn solr_parser(name: OwnedName, attributes: Vec<OwnedAttribute>) {
+pub fn schema_parser(name: &OwnedName, attributes: Vec<OwnedAttribute>) {
     let local_name = name.local_name.as_str();
     if !SCHEME_FIELDS.contains(&local_name) {
         panic!("Found unsupported schema field: {}.", &local_name)
@@ -203,7 +203,7 @@ pub fn solr_parser(name: OwnedName, attributes: Vec<OwnedAttribute>) {
                     });
             }
             SolrFields::Unknown(e) => {
-                println!("missing field, {:?}", &e)
+                // panic!("missing field, {:?}", &e)
             }
         },
         Err(_) => (),
