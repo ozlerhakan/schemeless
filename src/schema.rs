@@ -16,7 +16,7 @@ const SCHEME_FIELDS: [&'static str; 10] = [
     "copyField",
 ];
 
-const FIELD_PROPERTIES: [&str; 17] = [
+const OPTIONAL_FIELD_PROPERTIES: [&str; 17] = [
     "indexed",
     "stored",
     "docValues",
@@ -77,7 +77,7 @@ const DEPRECATED_FIELD_TYPES: [&'static str; 8] = [
     "TrieField",
 ];
 
-const FIELD_TYPE_PROPERTIES: [&'static str; 8] = [
+const FIELD_TYPE_GENERAL_PROPERTIES: [&'static str; 8] = [
     "name",
     "class",
     "positionIncrementGap",
@@ -93,7 +93,7 @@ const SOLR_CONSTANT_TYPE_NAMES: [&'static str; 4] =
 
 const FIELD_TYPE_CLASSES_NAMES: [&'static str; 2] = ["solr.", "org.apache.solr.schema."];
 
-const FIELD_KEYS: [&str; 2] = ["name", "type"];
+const FIELD_DEFINITIONS: [&str; 3] = ["name", "type", "default"];
 
 #[derive(Debug, PartialEq)]
 enum SolrFields {
@@ -126,15 +126,15 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
             SolrFields::Field => {
                 for attribute in &attributes {
                     let field_property = attribute.name.local_name.as_str();
-                    if !FIELD_KEYS.contains(&field_property)
-                        && !FIELD_PROPERTIES.contains(&field_property)
+                    if !FIELD_DEFINITIONS.contains(&field_property)
+                        && !OPTIONAL_FIELD_PROPERTIES.contains(&field_property)
                     {
                         panic!(
                             "Found unsupported field key or property for 'field': {}.",
                             &field_property
                         )
                     }
-                    if FIELD_PROPERTIES.contains(&field_property) {
+                    if OPTIONAL_FIELD_PROPERTIES.contains(&field_property) {
                         if attribute.value != "true" && attribute.value != "false" {
                             panic!(
                                 "Found unsupported value '{}' for {} type in {}={}.",
@@ -203,6 +203,15 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                             &attributes,
                         )
                     });
+                let not_any_attribute = attributes
+                    .iter()
+                    .all(|s| !FIELD_TYPE_GENERAL_PROPERTIES.contains(&s.name.local_name.as_str()));
+                if not_any_attribute {
+                    panic!(
+                        "Could not find any attributes of the fieldType: {:?}.",
+                        FIELD_TYPE_GENERAL_PROPERTIES
+                    );
+                }
                 check_duplicate_field_names(names, &attributes);
             }
             SolrFields::Unknown(e) => {
