@@ -77,7 +77,7 @@ const DEPRECATED_FIELD_TYPES: [&'static str; 8] = [
     "TrieField",
 ];
 
-const FIELD_TYPE_PROPERTIES: [&'static str; 10] = [
+const FIELD_TYPE_PROPERTIES: [&'static str; 8] = [
     "name",
     "class",
     "positionIncrementGap",
@@ -86,9 +86,10 @@ const FIELD_TYPE_PROPERTIES: [&'static str; 10] = [
     "enableGraphQueries",
     "docValuesFormat",
     "postingsFormat",
-    "subFieldSuffix",
-    "dimension",
 ];
+
+const SOLR_CONSTANT_TYPE_NAMES: [&'static str; 4] =
+    ["_root_", "_version_", "_nest_path_", "_text_"];
 
 const FIELD_TYPE_CLASSES_NAMES: [&'static str; 2] = ["solr.", "org.apache.solr.schema."];
 
@@ -115,7 +116,7 @@ impl FromStr for SolrFields {
     }
 }
 
-pub fn schema_parser(name: &OwnedName, attributes: Vec<OwnedAttribute>) {
+pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<OwnedAttribute>) {
     let local_name = name.local_name.as_str();
     if !SCHEME_FIELDS.contains(&local_name) {
         panic!("Found unsupported schema field: {}.", &local_name)
@@ -149,6 +150,7 @@ pub fn schema_parser(name: &OwnedName, attributes: Vec<OwnedAttribute>) {
                         }
                     }
                 }
+                check_duplicate_field_names(names, &attributes);
             }
             SolrFields::CopyField => {
                 let dest = &attributes
@@ -201,11 +203,23 @@ pub fn schema_parser(name: &OwnedName, attributes: Vec<OwnedAttribute>) {
                             &attributes,
                         )
                     });
+                check_duplicate_field_names(names, &attributes);
             }
             SolrFields::Unknown(e) => {
-                // panic!("missing field, {:?}", &e)
+                println!("skipiing field, {:?}", &e)
             }
         },
         Err(_) => (),
     }
+}
+
+fn check_duplicate_field_names(names: &mut Vec<String>, attributes: &Vec<OwnedAttribute>) {
+    let local_name_option = &attributes.iter().find(|x| x.name.local_name == "name");
+    if local_name_option.is_some() {
+        let name_value = &local_name_option.unwrap().value;
+        if names.contains(&name_value) && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str()) {
+            panic!("Found duplicate field names '{}'.", &name_value)
+        }
+        names.push(name_value.clone());
+    };
 }

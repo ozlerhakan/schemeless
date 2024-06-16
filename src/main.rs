@@ -20,35 +20,16 @@ struct SchemaArgs {
 fn main() -> std::io::Result<()> {
     let args = SchemaArgs::parse();
     let file = File::open(args.file)?;
-    let file = BufReader::new(file);
+    let file = BufReader::new(&file);
 
     let parser = EventReader::new(file);
     let mut names: Vec<String> = Vec::new();
-    // let mut depth = 0;
     for e in parser {
         match e {
             Ok(XmlEvent::StartElement {
                 name, attributes, ..
             }) => {
-                // println!("{:spaces$}+{name}", "", spaces = depth * 2);
-                // depth += 1;
-                let local_name_option = &attributes.iter().find(|x| x.name.local_name == "name");
-                if let Some(local_name) = local_name_option {
-                    // let local_name = &name.local_name;
-                    let name_value = &local_name.value;
-                    if names.contains(&name_value) {
-                        panic!(
-                            "Found duplicate field names {} in the schema. ",
-                            &name_value
-                        )
-                    }
-                    names.push(name_value.to_string());
-                }
-                schema_parser(&name, attributes);
-            }
-            Ok(XmlEvent::EndElement { name }) => {
-                // depth -= 1;
-                // println!("{:spaces$}-{name}", "", spaces = depth * 2);
+                schema_parser(&mut names, &name, attributes);
             }
             Err(e) => {
                 eprintln!("Error: {e}");

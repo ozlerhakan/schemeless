@@ -125,7 +125,7 @@
   <!-- This can be enabled, in case the client does not know what fields may be searched. It isn't enabled by default
          because it's very expensive to index everything twice. -->
   <!-- <copyField source="*" dest="_text_"/> -->
-  <copyField dest="_text_"/>
+  <!-- <copyField dest="_text_"/> -->
 
   <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names.
@@ -520,7 +520,7 @@
   <fieldType name="point" class="solr.PointType" dimension="2" subFieldSuffix="_d"/>
 
   <!-- A specialized field for geospatial search filters and distance sorting. -->
-  <fieldType name="location" class="solr.LatLonPointSpatialField" docValues="true"/>
+  <fieldType name="location" class="solr.CurrencyFieldType" docValues="true"/>
 
   <!-- A geospatial field type that supports multiValued and polygon shapes.
       For more information about this and other spatial fields see:
