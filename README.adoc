@@ -1,6 +1,6 @@
 = Schemeless
 
-Validating Solr schema.xml files seamessly.
+Inspired by https://issues.apache.org/jira/browse/SOLR-1758[SOLR-1758], Schemeless enables us to validate Solr schema files seamessly using built-in rules based on past experiences. Feel free to contribute to support more schema rules.
 
 == How to get started
 
