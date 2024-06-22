@@ -3,7 +3,7 @@ use std::str::FromStr;
 use xml::attribute::OwnedAttribute;
 use xml::name::OwnedName;
 
-const SCHEME_FIELDS: [&'static str; 10] = [
+const SCHEME_FIELDS: [&'static str; 11] = [
     "field",
     "fieldType",
     "dynamicField",
@@ -14,6 +14,7 @@ const SCHEME_FIELDS: [&'static str; 10] = [
     "schema",
     "charFilter",
     "copyField",
+    "similarity",
 ];
 
 const OPTIONAL_FIELD_PROPERTIES: [&str; 17] = [
