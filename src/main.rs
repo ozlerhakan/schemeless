@@ -31,6 +31,9 @@ fn main() -> std::io::Result<()> {
             }) => {
                 schema_parser(&mut names, &name, attributes);
             }
+            Ok(XmlEvent::Characters(ref data)) => {
+                println!("{:?}", data);
+            }
             Err(e) => {
                 eprintln!("Error: {e}");
                 break;
