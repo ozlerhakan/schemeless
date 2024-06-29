@@ -24,15 +24,25 @@ fn main() -> std::io::Result<()> {
 
     let parser = EventReader::new(file);
     let mut names: Vec<String> = Vec::new();
+    let mut unique_key_exists = false;
+    let mut id_field = String::new();
     for e in parser {
         match e {
             Ok(XmlEvent::StartElement {
                 name, attributes, ..
             }) => {
                 schema_parser(&mut names, &name, attributes);
+                let local_name = name.local_name.as_str();
+                if local_name == "uniqueKey" {
+                    unique_key_exists = true;
+                }
             }
             Ok(XmlEvent::Characters(ref data)) => {
                 println!("{:?}", data);
+                if unique_key_exists {
+                    id_field = data.to_owned();
+                    unique_key_exists = false;
+                }
             }
             Err(e) => {
                 eprintln!("Error: {e}");
@@ -40,6 +50,12 @@ fn main() -> std::io::Result<()> {
             }
             _ => {}
         }
+    }
+    if !id_field.is_empty() && !names.contains(&id_field.to_string()) {
+        panic!(
+            "Could not found the field '{}' among the field types.",
+            id_field
+        )
     }
 
     Ok(())
