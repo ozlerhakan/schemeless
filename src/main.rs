@@ -51,7 +51,7 @@ fn main() -> std::io::Result<()> {
             _ => {}
         }
     }
-    if !id_field.is_empty() && !names.contains(&id_field.to_string()) {
+    if !id_field.is_empty() && !names.contains(&format!("field:{}", &id_field)) {
         panic!(
             "Could not found the field '{}' among the field types.",
             id_field

@@ -151,7 +151,7 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                         }
                     }
                 }
-                check_duplicate_field_names(names, &attributes);
+                check_duplicate_field_names(names, &local_name, &attributes);
             }
             SolrFields::CopyField => {
                 let dest = &attributes
@@ -213,7 +213,7 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                         FIELD_TYPE_GENERAL_PROPERTIES
                     );
                 }
-                check_duplicate_field_names(names, &attributes);
+                check_duplicate_field_names(names, &local_name, &attributes);
             }
             SolrFields::Unknown(e) => {
                 println!("skipiing field, {:?}", &e)
@@ -223,13 +223,17 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
     }
 }
 
-fn check_duplicate_field_names(names: &mut Vec<String>, attributes: &Vec<OwnedAttribute>) {
+fn check_duplicate_field_names(
+    names: &mut Vec<String>,
+    local_name: &str,
+    attributes: &Vec<OwnedAttribute>,
+) {
     let local_name_option = &attributes.iter().find(|x| x.name.local_name == "name");
     if local_name_option.is_some() {
         let name_value = &local_name_option.unwrap().value;
         if names.contains(&name_value) && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str()) {
             panic!("Found duplicate field names '{}'.", &name_value)
         }
-        names.push(name_value.clone());
+        names.push(format!("{}:{}", local_name, name_value.as_str()));
     };
 }
