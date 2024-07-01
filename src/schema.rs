@@ -216,7 +216,7 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                 check_duplicate_field_names(names, &local_name, &attributes);
             }
             SolrFields::Unknown(e) => {
-                println!("skipiing field, {:?}", &e)
+                println!("skipping field, {:?}", &e)
             }
         },
         Err(_) => (),
