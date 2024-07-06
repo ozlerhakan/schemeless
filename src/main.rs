@@ -38,7 +38,6 @@ fn main() -> std::io::Result<()> {
                 }
             }
             Ok(XmlEvent::Characters(ref data)) => {
-                println!("{:?}", data);
                 if unique_key_exists {
                     id_field = data.to_owned();
                     unique_key_exists = false;
@@ -60,3 +59,5 @@ fn main() -> std::io::Result<()> {
 
     Ok(())
 }
+
+// include tests!

@@ -89,6 +89,9 @@ const FIELD_TYPE_GENERAL_PROPERTIES: [&'static str; 8] = [
     "postingsFormat",
 ];
 
+// SOLR-17274: https://issues.apache.org/jira/browse/SOLR-17274
+const PRESERVED_SOLR_NAMES: [&'static str; 3] = ["set", "add", "remove"];
+
 const SOLR_CONSTANT_TYPE_NAMES: [&'static str; 4] =
     ["_root_", "_version_", "_nest_path_", "_text_"];
 
@@ -231,8 +234,11 @@ fn check_duplicate_field_names(
     let local_name_option = &attributes.iter().find(|x| x.name.local_name == "name");
     if local_name_option.is_some() {
         let name_value = &local_name_option.unwrap().value;
-        if names.contains(&name_value) && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str()) {
-            panic!("Found duplicate field names '{}'.", &name_value)
+        if PRESERVED_SOLR_NAMES.contains(&name_value.as_str()) {
+            panic!("Found the reserved keyword '{name_value}' being used in '{local_name}'.")
+        }
+        if names.contains(name_value) && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str()) {
+            panic!("Found duplicate field names '{}'.", name_value)
         }
         names.push(format!("{}:{}", local_name, name_value.as_str()));
     };
