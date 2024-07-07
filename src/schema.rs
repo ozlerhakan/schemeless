@@ -104,6 +104,7 @@ enum SolrFields {
     Field,
     CopyField,
     FieldType,
+    DynamicField,
     Unknown(String),
 }
 
@@ -115,6 +116,7 @@ impl FromStr for SolrFields {
             "field" => Ok(SolrFields::Field),
             "copyField" => Ok(SolrFields::CopyField),
             "fieldType" => Ok(SolrFields::FieldType),
+            "dynamicField" => Ok(SolrFields::DynamicField),
             _ => Ok(SolrFields::Unknown(s.to_string())),
         }
     }
@@ -127,7 +129,7 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
     }
     match SolrFields::from_str(&local_name) {
         Ok(field_enum) => match field_enum {
-            SolrFields::Field => {
+            SolrFields::Field | SolrFields::DynamicField => {
                 for attribute in &attributes {
                     let field_property = attribute.name.local_name.as_str();
                     if !FIELD_DEFINITIONS.contains(&field_property)
