@@ -1,6 +1,5 @@
-use clap::Parser;
-
 use crate::schema::schema_parser;
+use clap::Parser;
 use std::fs::File;
 use std::io::BufReader;
 use xml::reader::{EventReader, XmlEvent};
@@ -20,9 +19,15 @@ struct SchemaArgs {
 fn main() -> std::io::Result<()> {
     let args = SchemaArgs::parse();
     let file = File::open(args.file)?;
-    let file = BufReader::new(&file);
+    let file: BufReader<&File> = BufReader::new(&file);
+    schema_operations(file);
+    Ok(())
+}
 
-    let parser = EventReader::new(file);
+fn schema_operations<R: std::io::Read>(reader: R) {
+    let buf_reader = BufReader::new(reader);
+    let parser = EventReader::new(buf_reader);
+
     let mut names: Vec<String> = Vec::new();
     let mut unique_key_exists = false;
     let mut id_field = String::new();
@@ -56,8 +61,23 @@ fn main() -> std::io::Result<()> {
             id_field
         )
     }
-
-    Ok(())
 }
 
-// include tests!
+#[cfg(test)]
+mod tests {
+    use crate::schema_operations;
+    use std::io::Cursor;
+
+    #[test]
+    #[should_panic(expected = "Found unsupported schema field: fiedTtype")]
+    fn fail_schema_with_incorrect_definition() {
+        let example = r#"
+        <schema name="publications" version="1.6">
+            <similarity class="solr.BM25SimilarityFactory" />
+            <fiedTtype name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+}
