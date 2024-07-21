@@ -133,4 +133,19 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+
+    #[test]
+    #[should_panic(
+        expected = "Found some optional fields are incorrectly defined for 'field': equired."
+    )]
+    fn test_schema_with_incorrect_attribute() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" equired="true" stored="TruE" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
 }

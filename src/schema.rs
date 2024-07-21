@@ -150,8 +150,9 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                         match attribute.name.local_name.as_str() {
                             "name" => {}
                             "type" => {}
+                            "default" => {}
                             _ => {
-                                println!(
+                                panic!(
                                     "Found some optional fields are incorrectly defined for 'field': {}.",
                                     &field_property
                                 )
@@ -159,18 +160,23 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                         }
                     }
                     if OPTIONAL_FIELD_PROPERTIES.contains(&field_property) {
-                        if attribute.value != "true" && attribute.value != "false" {
-                            panic!(
-                                "Found unsupported value '{}' for {} type in {}={}.",
-                                attribute.value,
-                                field_property,
-                                local_name,
-                                &attributes
-                                    .iter()
-                                    .find(|n| n.name.local_name == "name")
-                                    .unwrap()
-                                    .value
-                            )
+                        match attribute.name.local_name.as_str() {
+                            "default" => {}
+                            _ => {
+                                if attribute.value != "true" && attribute.value != "false" {
+                                    panic!(
+                                        "Found unsupported value '{}' for {} type in {}={}.",
+                                        attribute.value,
+                                        field_property,
+                                        local_name,
+                                        &attributes
+                                            .iter()
+                                            .find(|n| n.name.local_name == "name")
+                                            .unwrap()
+                                            .value
+                                    )
+                                }
+                            }
                         }
                     }
                 }
