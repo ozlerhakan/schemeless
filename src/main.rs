@@ -70,11 +70,64 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "Found unsupported schema field: fiedTtype")]
-    fn fail_schema_with_incorrect_definition() {
+    fn test_schema_with_incorrect_definition() {
         let example = r#"
-        <schema name="publications" version="1.6">
+        <schema version="1.6">
             <similarity class="solr.BM25SimilarityFactory" />
             <fiedTtype name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(expected = "Could not found the field 'id' among the field types")]
+    fn test_schema_with_missing_uniquekey() {
+        let example = r#"
+        <schema version="1.6">
+        <uniqueKey>id</uniqueKey>
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    fn test_schema_with_correct_attributes() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "Found unsupported field key or property for 'field': [\"name\", \"type\"]"
+    )]
+    fn test_schema_with_missing_type() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(expected = "Found unsupported value 'TruE' for stored type in field=id")]
+    fn test_schema_with_incorrect_bool_value() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="TruE" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
         </schema>
         "#;
         let cursor = Cursor::new(example);

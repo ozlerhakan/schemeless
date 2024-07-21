@@ -17,7 +17,7 @@ const SCHEME_FIELDS: [&'static str; 11] = [
     "similarity",
 ];
 
-const OPTIONAL_FIELD_PROPERTIES: [&str; 17] = [
+const OPTIONAL_FIELD_PROPERTIES: [&str; 18] = [
     "indexed",
     "stored",
     "docValues",
@@ -35,6 +35,7 @@ const OPTIONAL_FIELD_PROPERTIES: [&str; 17] = [
     "required",
     "unseDocValuesAsStored",
     "large",
+    "default",
 ];
 
 const FIELD_TYPE_CLASSES: [&'static str; 27] = [
@@ -97,7 +98,7 @@ const SOLR_CONSTANT_TYPE_NAMES: [&'static str; 4] =
 
 const FIELD_TYPE_CLASSES_NAMES: [&'static str; 2] = ["solr.", "org.apache.solr.schema."];
 
-const FIELD_DEFINITIONS: [&str; 3] = ["name", "type", "default"];
+const FIELD_DEFINITIONS: [&str; 2] = ["name", "type"];
 
 #[derive(Debug, PartialEq)]
 enum SolrFields {
@@ -127,18 +128,35 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
     if !SCHEME_FIELDS.contains(&local_name) {
         panic!("Found unsupported schema field: {}.", &local_name)
     }
+    let required_fields: Vec<&str> = FIELD_DEFINITIONS.iter().copied().collect();
+    let attribute_names: Vec<&str> = attributes
+        .iter()
+        .map(|attr| attr.name.local_name.as_str())
+        .collect();
+
     match SolrFields::from_str(&local_name) {
         Ok(field_enum) => match field_enum {
             SolrFields::Field | SolrFields::DynamicField => {
+                let all_required = check_required_field(&required_fields, attribute_names);
+                if !all_required {
+                    panic!(
+                        "Found unsupported field key or property for 'field': {:?}.",
+                        required_fields,
+                    )
+                }
                 for attribute in &attributes {
                     let field_property = attribute.name.local_name.as_str();
-                    if !FIELD_DEFINITIONS.contains(&field_property)
-                        && !OPTIONAL_FIELD_PROPERTIES.contains(&field_property)
-                    {
-                        panic!(
-                            "Found unsupported field key or property for 'field': {}.",
-                            &field_property
-                        )
+                    if !OPTIONAL_FIELD_PROPERTIES.contains(&field_property) {
+                        match attribute.name.local_name.as_str() {
+                            "name" => {}
+                            "type" => {}
+                            _ => {
+                                println!(
+                                    "Found some optional fields are incorrectly defined for 'field': {}.",
+                                    &field_property
+                                )
+                            }
+                        }
                     }
                     if OPTIONAL_FIELD_PROPERTIES.contains(&field_property) {
                         if attribute.value != "true" && attribute.value != "false" {
@@ -226,6 +244,13 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
         },
         Err(_) => (),
     }
+}
+
+fn check_required_field(required_fields: &Vec<&str>, attribute_names: Vec<&str>) -> bool {
+    let all_required = required_fields
+        .iter()
+        .all(|&field| attribute_names.contains(&field));
+    all_required
 }
 
 fn check_duplicate_field_names(
