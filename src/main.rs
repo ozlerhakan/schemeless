@@ -148,4 +148,62 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+
+    #[test]
+    #[should_panic(expected = "copyField must have the source attribute.")]
+    fn test_copyfied_source() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <copyField dest="doi_string" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(expected = "copyField must have the dest attribute.")]
+    fn test_copyfied_dest() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <copyField source="doi"  />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "dest: 'doi' and source: 'doi' cannot share the same value in copyField"
+    )]
+    fn test_copyfied_source_dest() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <copyField source="doi" dest="doi" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+    #[test]
+    #[should_panic(expected = "Found an undefined class type in the fieldType declaration")]
+    fn test_undefined_solr_class() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <copyField source="doi" dest="doid" />
+        <fieldType name="pdates" class="solr.datePointField" docValues="true" multiValued="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
 }
