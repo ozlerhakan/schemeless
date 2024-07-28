@@ -206,4 +206,46 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+    #[test]
+    #[should_panic(expected = "Found deprecated class in the fieldType declaration")]
+    fn test_deprecated_type() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <copyField source="doi" dest="doid" />
+        <fieldType name="int" class="solr.TrieDoubleField" positionIncrementGap="0" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+    #[test]
+    #[should_panic(expected = "Could not find any attributes of the fieldType")]
+    fn test_general_attributes() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <copyField source="doi" dest="doid" />
+        <fieldType class="solr.DoublePointField"  />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(expected = "Found duplicate field names 'string'")]
+    fn test_duplicate_value() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
 }

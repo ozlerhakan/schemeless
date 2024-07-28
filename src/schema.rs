@@ -79,9 +79,8 @@ const DEPRECATED_FIELD_TYPES: [&'static str; 8] = [
     "TrieField",
 ];
 
-const FIELD_TYPE_GENERAL_PROPERTIES: [&'static str; 8] = [
+const FIELD_TYPE_GENERAL_PROPERTIES: [&'static str; 7] = [
     "name",
-    "class",
     "positionIncrementGap",
     "autoGeneratePhraseQueries",
     "synonymQueryStyle",
@@ -201,6 +200,16 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                 }
             }
             SolrFields::FieldType => {
+                let deprecated_attribute = attributes
+                    .iter()
+                    .filter(|e| e.name.local_name == "class")
+                    .any(|e| {
+                        return DEPRECATED_FIELD_TYPES
+                            .contains(&&e.value.split('.').last().unwrap());
+                    });
+                if deprecated_attribute {
+                    panic!("Found deprecated class in the fieldType declaration: {:?}. Please consider changing it with the new equivalent type: https://solr.apache.org/guide/solr/latest/indexing-guide/field-types-included-with-solr.html#deprecated-field-types", &attributes)
+                }
                 // check a class that starts with "org.apache.solr.schema" or "solr" and has support one of FIELD_TYPE_CLASSES
                 let class_attribute: Vec<_> = attributes
                     .iter()
@@ -223,16 +232,6 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                         &attributes
                     )
                 }
-                attributes
-                    .iter()
-                    .filter(|e| &e.name.local_name == &"class")
-                    .find(|e| !DEPRECATED_FIELD_TYPES.contains(&e.value.as_str()))
-                    .unwrap_or_else(|| {
-                        panic!(
-                            "Found deprecated class in the fieldType declaration: {:?}",
-                            &attributes,
-                        )
-                    });
                 let not_any_attribute = attributes
                     .iter()
                     .all(|s| !FIELD_TYPE_GENERAL_PROPERTIES.contains(&s.name.local_name.as_str()));
@@ -267,10 +266,13 @@ fn check_duplicate_field_names(
     let local_name_option = &attributes.iter().find(|x| x.name.local_name == "name");
     if local_name_option.is_some() {
         let name_value = &local_name_option.unwrap().value;
+        let name_with_tag = format!("{}:{}", local_name, name_value.as_str());
         if PRESERVED_SOLR_NAMES.contains(&name_value.as_str()) {
             panic!("Found the reserved keyword '{name_value}' being used in '{local_name}'.")
         }
-        if names.contains(name_value) && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str()) {
+        if names.contains(&name_with_tag)
+            && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str())
+        {
             panic!("Found duplicate field names '{}'.", name_value)
         }
         names.push(format!("{}:{}", local_name, name_value.as_str()));
