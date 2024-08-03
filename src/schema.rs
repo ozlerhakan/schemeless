@@ -275,6 +275,6 @@ fn check_duplicate_field_names(
         {
             panic!("Found duplicate field names '{}'.", name_value)
         }
-        names.push(format!("{}:{}", local_name, name_value.as_str()));
+        names.push(name_with_tag);
     };
 }

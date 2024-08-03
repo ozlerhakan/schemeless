@@ -248,4 +248,17 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+
+    #[test]
+    #[should_panic(expected = "Found the reserved keyword")]
+    fn test_dreserved_keyword() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="add" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
 }
