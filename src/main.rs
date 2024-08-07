@@ -323,9 +323,22 @@ mod tests {
     fn test_duplicate_field_name_keyword() {
         let example = r#"
         <schema version="1.6">
-        <field name="id" type="id_unique" required="true" stored="true" />
-        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
-        <field name="id" type="id_unique" required="true" stored="true" />
+            <field name="id" type="id_unique" required="true" stored="true" />
+            <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+            <field name="id" type="id_unique" required="true" stored="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    fn test_correct_schema() {
+        let example = r#"
+        <schema version="1.6">
+            <field name="id" type="id_unique" required="true" stored="true" />
+            <fieldType name="id_unique" class="solr.StrField" sortMissingLast="true" docValues="true" />
+            <field name="ids" type="id_unique" required="true" stored="true" />
         </schema>
         "#;
         let cursor = Cursor::new(example);
