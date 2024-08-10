@@ -1,7 +1,7 @@
 use crate::schema::schema_parser;
 use clap::Parser;
-use std::fs::File;
 use std::io::BufReader;
+use std::{collections::HashMap, fs::File};
 use xml::reader::{EventReader, XmlEvent};
 
 mod schema;
@@ -29,6 +29,7 @@ fn schema_operations<R: std::io::Read>(reader: R) {
     let parser = EventReader::new(buf_reader);
 
     let mut names: Vec<String> = Vec::new();
+    let mut field_types: HashMap<String, String> = HashMap::new();
     let mut unique_key_exists = false;
     let mut id_field = String::new();
     for e in parser {
@@ -36,7 +37,7 @@ fn schema_operations<R: std::io::Read>(reader: R) {
             Ok(XmlEvent::StartElement {
                 name, attributes, ..
             }) => {
-                schema_parser(&mut names, &name, attributes);
+                schema_parser(&mut names, &mut field_types, &name, attributes);
                 let local_name = name.local_name.as_str();
                 if local_name == "uniqueKey" {
                     unique_key_exists = true;
@@ -60,6 +61,14 @@ fn schema_operations<R: std::io::Read>(reader: R) {
             "Could not found the field '{}' among the field types.",
             id_field
         )
+    }
+    for (key_field, value_field_type) in field_types.iter() {
+        if !names.contains(&format!("fieldType:{}", value_field_type)) {
+            panic!(
+                "Could not find the type '{}' defined in '{}'",
+                value_field_type, key_field
+            )
+        }
     }
 }
 
@@ -96,6 +105,20 @@ mod tests {
 
     #[test]
     fn test_schema_with_correct_attributes() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <fieldType name="id_unique" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(expected = "Could not find the type 'id_unique' defined in 'id'")]
+    fn test_schema_with_incorrect_type_reference() {
         let example = r#"
         <schema version="1.6">
         <field name="id" type="id_unique" required="true" stored="true" />

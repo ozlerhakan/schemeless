@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use xml::attribute::OwnedAttribute;
@@ -122,7 +123,12 @@ impl FromStr for SolrFields {
     }
 }
 
-pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<OwnedAttribute>) {
+pub fn schema_parser(
+    names: &mut Vec<String>,
+    types: &mut HashMap<String, String>,
+    name: &OwnedName,
+    attributes: Vec<OwnedAttribute>,
+) {
     let local_name = name.local_name.as_str();
     if !SCHEME_FIELDS.contains(&local_name) {
         panic!("Found unsupported schema field: {}.", &local_name)
@@ -177,6 +183,14 @@ pub fn schema_parser(names: &mut Vec<String>, name: &OwnedName, attributes: Vec<
                                 }
                             }
                         }
+                    }
+                    if field_property == "type" {
+                        let field_name = &attributes.iter().find(|x| x.name.local_name == "name");
+                        let field_name_owned = field_name.unwrap();
+                        types.insert(
+                            field_name_owned.value.to_owned(),
+                            attribute.value.to_string(),
+                        );
                     }
                 }
                 check_duplicate_field_names(names, &local_name, &attributes);
@@ -264,17 +278,13 @@ fn check_duplicate_field_names(
     attributes: &Vec<OwnedAttribute>,
 ) {
     let local_name_option = &attributes.iter().find(|x| x.name.local_name == "name");
-    if local_name_option.is_some() {
-        let name_value = &local_name_option.unwrap().value;
-        let name_with_tag = format!("{}:{}", local_name, name_value.as_str());
-        if PRESERVED_SOLR_NAMES.contains(&name_value.as_str()) {
-            panic!("Found the reserved keyword '{name_value}' being used in '{local_name}'.")
-        }
-        if names.contains(&name_with_tag)
-            && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str())
-        {
-            panic!("Found duplicate field names '{}'.", name_value)
-        }
-        names.push(name_with_tag);
-    };
+    let name_value = &local_name_option.unwrap().value;
+    let name_with_tag = format!("{}:{}", local_name, name_value.as_str());
+    if PRESERVED_SOLR_NAMES.contains(&name_value.as_str()) {
+        panic!("Found the reserved keyword '{name_value}' being used in '{local_name}'.")
+    }
+    if names.contains(&name_with_tag) && !SOLR_CONSTANT_TYPE_NAMES.contains(&name_value.as_str()) {
+        panic!("Found duplicate field names '{}'.", name_value)
+    }
+    names.push(name_with_tag);
 }
