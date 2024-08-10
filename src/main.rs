@@ -284,4 +284,18 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+
+    #[test]
+    #[should_panic(expected = "Found duplicate types with the same name")]
+    fn test_duplicate_field_name_keyword() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <field name="id" type="id_unique" required="true" stored="true" />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
 }

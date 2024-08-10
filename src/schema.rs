@@ -187,6 +187,12 @@ pub fn schema_parser(
                     if field_property == "type" {
                         let field_name = &attributes.iter().find(|x| x.name.local_name == "name");
                         let field_name_owned = field_name.unwrap();
+                        if types.contains_key(&field_name_owned.value.to_owned()) {
+                            panic!(
+                                "Found duplicate types with the same name: '{}'.",
+                                field_name_owned.value
+                            )
+                        }
                         types.insert(
                             field_name_owned.value.to_owned(),
                             attribute.value.to_string(),
