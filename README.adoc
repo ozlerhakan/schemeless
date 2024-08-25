@@ -9,7 +9,7 @@ To build and run the Schemeless tool, follow these steps:
 [bash]
 ----
 $ cargo build
-$ cargo run -- examples/managed-schema.xml
+$ cargo run -- -f examples/managed-schema.xml
 ----
 
 Alternatively, prepare it as a CLI command:
@@ -17,5 +17,5 @@ Alternatively, prepare it as a CLI command:
 [bash]
 ----
 $ cargo build --release
-$ target/release/schemeless examples/managed-schema.xml
+$ target/release/schemeless -f examples/managed-schema.xml
 ----
