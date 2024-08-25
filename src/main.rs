@@ -11,8 +11,9 @@ mod schema;
 #[command(version = "0.0.1")]
 #[command(author, version, about, long_about = None)]
 #[command(next_line_help = true)]
+#[group(required = true)]
 struct SchemaArgs {
-    #[clap(value_parser = clap::value_parser!(String))]
+    #[arg(id="file", short='f', value_parser = clap::value_parser!(String))]
     file: String,
 }
 
