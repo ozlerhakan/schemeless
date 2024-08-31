@@ -30,6 +30,7 @@ fn schema_operations<R: std::io::Read>(reader: R) {
     let parser = EventReader::new(buf_reader);
 
     let mut names: Vec<String> = Vec::new();
+    let mut copy_fields: Vec<String> = Vec::new();
     let mut field_types: HashMap<String, String> = HashMap::new();
     let mut unique_key_exists = false;
     let mut id_field = String::new();
@@ -38,7 +39,13 @@ fn schema_operations<R: std::io::Read>(reader: R) {
             Ok(XmlEvent::StartElement {
                 name, attributes, ..
             }) => {
-                schema_parser(&mut names, &mut field_types, &name, attributes);
+                schema_parser(
+                    &mut names,
+                    &mut copy_fields,
+                    &mut field_types,
+                    &name,
+                    attributes,
+                );
                 let local_name = name.local_name.as_str();
                 if local_name == "uniqueKey" {
                     unique_key_exists = true;
@@ -69,6 +76,11 @@ fn schema_operations<R: std::io::Read>(reader: R) {
                 "Could not find the type '{}' defined in '{}'",
                 value_field_type, key_field
             )
+        }
+    }
+    for key in copy_fields {
+        if !names.contains(&format!("field:{}", key)) {
+            panic!("Could not find the field type '{}' in one copyField", key)
         }
     }
 }
@@ -230,6 +242,7 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+
     #[test]
     #[should_panic(expected = "Found deprecated class in the fieldType declaration")]
     fn test_deprecated_type() {
@@ -244,6 +257,7 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+
     #[test]
     #[should_panic(expected = "Could not find any attributes of the fieldType")]
     fn test_general_attributes() {
@@ -253,6 +267,21 @@ mod tests {
         <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
         <copyField source="doi" dest="doid" />
         <fieldType class="solr.DoublePointField"  />
+        </schema>
+        "#;
+        let cursor = Cursor::new(example);
+        schema_operations(cursor)
+    }
+
+    #[test]
+    #[should_panic(expected = "Could not find the field type 'doid' in one copyField")]
+    fn test_field_not_found_in_copy_field() {
+        let example = r#"
+        <schema version="1.6">
+        <field name="id" type="id_unique" required="true" stored="true" />
+        <fieldType name="id_unique" class="solr.StrField" sortMissingLast="true" docValues="true" />
+        <copyField source="doi" dest="doid" />
+        <fieldType name="doi" class="solr.StrField" sortMissingLast="true" docValues="true" />
         </schema>
         "#;
         let cursor = Cursor::new(example);

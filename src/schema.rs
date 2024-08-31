@@ -125,6 +125,7 @@ impl FromStr for SolrFields {
 
 pub fn schema_parser(
     names: &mut Vec<String>,
+    copy_fields: &mut Vec<String>,
     types: &mut HashMap<String, String>,
     name: &OwnedName,
     attributes: Vec<OwnedAttribute>,
@@ -218,6 +219,8 @@ pub fn schema_parser(
                         dest, source
                     )
                 }
+                copy_fields.push(dest.to_string());
+                copy_fields.push(source.to_string());
             }
             SolrFields::FieldType => {
                 let deprecated_attribute = attributes
