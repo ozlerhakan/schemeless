@@ -78,10 +78,12 @@ fn schema_operations<R: std::io::Read>(reader: R) {
             )
         }
     }
-    for key in copy_fields {
-        if !names.contains(&format!("field:{}", key)) {
-            panic!("Could not find the field type '{}' in one copyField", key)
+    for key in &copy_fields {
+        let field_name = &format!("field:{}", key);
+        if names.contains(&field_name) {
+            continue;
         }
+        panic!("Could not find the field type '{}' in one copyField.", key)
     }
 }
 
@@ -228,6 +230,7 @@ mod tests {
         let cursor = Cursor::new(example);
         schema_operations(cursor)
     }
+
     #[test]
     #[should_panic(expected = "Found an undefined class type in the fieldType declaration")]
     fn test_undefined_solr_class() {
